@@ -3,7 +3,7 @@
 Sistema de Registro de Ponto dos Funcionários  
 Este projeto é o frontend desenvolvido em Vue.js que consome a API de ponto feita em Laravel 10 com autenticação JWT.
 
-## 🚀 Tecnologias Utilizadas
+## Tecnologias Utilizadas
 
 - [Vue 3](https://vuejs.org/)
 - [Vue Router](https://router.vuejs.org/)
@@ -12,7 +12,7 @@ Este projeto é o frontend desenvolvido em Vue.js que consome a API de ponto fei
 - [Bootstrap 5](https://getbootstrap.com/)
 - [Vite](https://vitejs.dev/)
 
-## 📦 Instalação
+## Instalação
 
 Clone o repositório:
 
