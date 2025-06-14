@@ -48,7 +48,7 @@ Tela administrativa para:
 * Cadastro, edição e exclusão de usuários
 * Geração de relatórios em PDF
 
-📁 Estrutura de Pastas
+Estrutura de Pastas
 ```bash
 src/
 ├── assets/
