@@ -1,18 +1,17 @@
 <template>
     <div class="container py-5">
-      <!-- Cabeçalho -->
       <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
           <h2 class="text-primary">Painel do Administrador</h2>
           <p class="text-muted">Gerencie os funcionários e gere relatórios diários</p>
         </div>
         <div class="text-end">
+          <button class="btn btn-outline-danger me-2" @click="logout()">Logout</button>
           <button class="btn btn-outline-success me-2" @click="abrirModal()">➕ Cadastrar Funcionário</button>
           <button class="btn btn-outline-primary" @click="gerarPDF">📄 Relatório PDF</button>
         </div>
       </div>
   
-      <!-- Tabela de funcionários -->
       <div class="card mb-4">
         <div class="card-body table-responsive">
           <h5 class="card-title text-center text-secondary mb-3">Funcionários Cadastrados</h5>
@@ -45,7 +44,6 @@
         </div>
       </div>
   
-      <!-- Modal -->
       <div class="modal fade" id="modalFuncionario" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-centered">
           <div class="modal-content">
@@ -124,138 +122,23 @@
     </div>
 </template>
   
-  <script setup>
-  import { ref, reactive, onMounted } from 'vue'
-  import { Modal } from 'bootstrap'
-  import Toastify from 'toastify-js'
-  import api from '../services/api'
-  
-  const usuarios = ref([])
-  const form = reactive({
-    id: null,
-    name: '',
-    email: '',
-    password: '',
-    password_confirmation: '',
-    role: 'user',
-    schedule_type: 'regular',
-    interval: '',
-    morning_clock_in: '08:00',
-    morning_clock_out: '12:00',
-    afternoon_clock_in: '14:00',
-    afternoon_clock_out: '18:00',
-  })
-  
-  const editando = ref(false)
-  let modal = null
-  
-  onMounted(fetchUsuarios)
-  
-  async function fetchUsuarios() {
-    try {
-      const response = await api.get('/user')
-      usuarios.value = response.data.data.data
-    } catch (e) {
-      showToast('Erro ao carregar usuários', 'error')
-    }
-  }
-  
-  function abrirModal(usuario = null) {
-    editando.value = !!usuario
-    if (usuario) {
-      Object.assign(form, {
-        id: usuario.id,
-        name: usuario.name,
-        email: usuario.email,
-        role: usuario.role,
-        schedule_type: usuario.schedule_type,
-        interval: usuario.interval,
-        morning_clock_in: usuario.morning_clock_in,
-        morning_clock_out: usuario.morning_clock_out,
-        afternoon_clock_in: usuario.afternoon_clock_in,
-        afternoon_clock_out: usuario.afternoon_clock_out,
-        password: '',
-        password_confirmation: '',
-      })
-    } else {
-      Object.keys(form).forEach(k => form[k] = k.includes('clock') ? '08:00' : '')
-      form.role = 'user'
-      form.schedule_type = 'regular'
-    }
-    modal = new Modal(document.getElementById('modalFuncionario'))
-    modal.show()
-  }
-  
-  async function editar(id) {
-    try {
-      const response = await api.get(`/user/${id}`)
-      abrirModal(response.data.data)
-    } catch (e) {
-      showToast('Erro ao buscar dados do usuário', 'error')
-    }
-  }
-  
-  function showToast(msg, type = 'success') {
-    Toastify({
-      text: msg,
-      duration: 4000,
-      gravity: 'top',
-      position: 'right',
-      close: true,
-      stopOnFocus: true,
-      style: {
-        background: type === 'success' ? '#1e7e34' : '#c82333',
-        borderRadius: '8px',
-        color: '#fff',
-      },
-    }).showToast()
-  }
-  
-    async function salvar() {
-        try {
-            if (editando.value) {
-            await api.put(`/user/${form.id}`, form)
-            showToast('Funcionário atualizado com sucesso!', 'success')
-        } else {
-            await api.post('/register', form)
-            showToast('Funcionário cadastrado com sucesso!', 'success')
-        }
+<script setup>
+    import { onMounted } from 'vue'
+    import useAdmin from '../composables/useAdmin'
 
-        fetchUsuarios();
-        modal.hide();
+    const {
+    usuarios,
+    form,
+    editando,
+    abrirModal,
+    editar,
+    excluir,
+    salvar,
+    logout,
+    gerarPDF,
+    fetchUsuarios
+    } = useAdmin()
 
-        } catch (e) {
-            showToast('Erro ao salvar funcionário.', 'error')
-            console.error(e)
-        }
-    }
-
-    async function excluir(user) {
-        if (!confirm(`Tem certeza que deseja excluir o funcionário "${user.name}"?`)) return
-
-        try {
-            await api.delete(`/user/${user.id}`)
-            usuarios.value = usuarios.value.filter(u => u.id !== user.id)
-            showToast('Funcionário excluído com sucesso!', 'success')
-        } catch (e) {
-            showToast('Erro ao excluir funcionário.', 'error')
-            console.error(e)
-        }
-    }
-  
-    async function gerarPDF() {
-        try {
-            const res = await api.get('/relatorio', { responseType: 'blob' })
-            const url = window.URL.createObjectURL(new Blob([res.data]))
-            const link = document.createElement('a')
-            link.href = url
-            link.setAttribute('download', 'relatorio.pdf')
-            document.body.appendChild(link)
-            link.click()
-            showToast('Relatório gerado com sucesso!', 'success')
-        } catch (e) {
-            showToast('Erro ao gerar PDF.', 'error')
-        }
-    }
-  </script>
+    onMounted(fetchUsuarios)
+</script>
   

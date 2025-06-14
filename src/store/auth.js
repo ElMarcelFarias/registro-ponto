@@ -18,8 +18,6 @@ export default {
     state.token = token
     state.role = role
 
-    alert(JSON.stringify(token));
-
     localStorage.setItem('token', token)
     localStorage.setItem('role', role)
 

@@ -1,19 +1,35 @@
 <template>
-    <div class="container py-5 text-center">
-      <h2 class="text-primary mb-4">Registro de Ponto</h2>
+    <div class="container py-5">
   
-      <div class="display-4 text-dark mb-3">
-        <strong>{{ currentTime }}</strong>
+      <div class="d-flex justify-content-end align-items-center mb-4">
+        <button @click="logout" class="btn btn-danger btn-lg">
+          Logout
+        </button>
       </div>
   
-      <button @click="registrarPonto" class="btn btn-lg btn-success mb-4">
-        🕒 Bater Ponto
-      </button>
+      <div class="d-flex justify-content-center align-items-center mb-4">
+        <h2 class="text-primary m-0">Registro de Ponto</h2>
+      </div>
+
+      <div class="text-center mb-4">
+        <div class="display-4 fw-bold text-dark">
+          {{ currentTime }}
+        </div>
+      </div>
   
-      <h4 class="text-secondary">Registros de Hoje</h4>
+      <div class="text-center mb-4">
+        <button @click="registrarPonto" class="btn btn-success btn-lg px-5 py-3 rounded-2">
+          🕒 Bater Ponto
+        </button>
+      </div>
+  
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h4 class="text-secondary m-0">Registros de Hoje</h4>
+      </div>
+  
       <div class="table-responsive">
-        <table class="table table-bordered table-striped mt-3">
-          <thead class="thead-dark">
+        <table class="table table-bordered table-striped">
+          <thead class="table-dark">
             <tr>
               <th>Entrada Manhã</th>
               <th>Saída Manhã</th>
@@ -29,90 +45,30 @@
               <td>{{ registro.afternoon_clock_out || 'PENDENTE' }}</td>
             </tr>
             <tr v-else>
-              <td colspan="4">Sem registros para hoje.</td>
+              <td colspan="4" class="text-center">Sem registros para hoje.</td>
             </tr>
           </tbody>
         </table>
       </div>
+      
     </div>
-  </template>
-  
-  <script setup>
-  import { ref, onMounted } from 'vue'
-  import api from '../services/api'
-  import Toastify from 'toastify-js'
-  import "toastify-js/src/toastify.css"
-  
-  const registro = ref(null)
-  const currentTime = ref('00:00:00')
-  
-  const atualizarRelogio = () => {
-    const agora = new Date()
-    const horas = agora.getHours().toString().padStart(2, '0')
-    const minutos = agora.getMinutes().toString().padStart(2, '0')
-    const segundos = agora.getSeconds().toString().padStart(2, '0')
-    currentTime.value = `${horas}:${minutos}:${segundos}`
-  }
-  
-  setInterval(atualizarRelogio, 1000)
-  
-    async function buscarRegistros() {
-        try {
-            const response = await api.get('/today-records')
-            registro.value = response.data.data[0]
-        } catch (error) {
-            console.error('Erro ao carregar registros:', error)
-        }
-    }
-  
-  async function registrarPonto() {
-    try {
-        const response = await api.post('/clockin')
+</template>
 
-        if (response.status === 200 && response.data?.data) {
-        Toastify({
-            text: response.data.message,
-            duration: 4000,
-            gravity: 'top',
-            position: 'right',
-            backgroundColor: '#28a745',
-            className: 'rounded'
-        }).showToast()
+<script setup>
+    import useRegistroPonto from '../composables/useRegistroPonto'
 
-        await buscarRegistros() 
-        } else {
-        Toastify({
-            text: 'Ponto não registrado. Tente novamente.',
-            duration: 4000,
-            gravity: 'top',
-            position: 'right',
-            backgroundColor: '#ffc107',
-            className: 'rounded'
-        }).showToast()
-        }
+    const {
+    currentTime,
+    registro,
+    registrarPonto,
+    logout
+    } = useRegistroPonto()
+</script>
 
-    } catch (error) {
-        const msg = error.response?.data?.message || 'Erro ao registrar ponto.'
-        Toastify({
-        text: msg,
-        duration: 4000,
-        gravity: 'top',
-        position: 'right',
-        backgroundColor: '#dc3545',
-        className: 'rounded'
-        }).showToast()
-    }
-  }
-  
-  onMounted(() => {
-    atualizarRelogio()
-    buscarRegistros()
-  })
-  </script>
-  
-  <style scoped>
-  .display-4 {
+
+<style scoped>
+.display-4 {
     font-size: 3rem;
-  }
-  </style>
+}
+</style>
   
